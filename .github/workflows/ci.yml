@@ -25,7 +25,8 @@ jobs:
       - name: Validate the user-facing config (remote package from this branch)
         run: |
           ref="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          sed "s/@main/@${ref}/g" firmware/example-user-config.yaml > example.yaml
+          printf 'wifi_ssid: ci\nwifi_password: ci-password\n' > secrets.yaml
+          sed -e "s/@main/@${ref}/g" -e 's/REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=/' firmware/example-user-config.yaml > example.yaml
           esphome config example.yaml
 
   case:

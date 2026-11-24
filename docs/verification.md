@@ -12,7 +12,7 @@
 
 ## NOT verified
 
-- **No hardware was built or run.** Display model `2.13inv3` vs. the board you receive, the RTC wiring, wake-on-button, the actual wake/boot timing for double-click, deep-sleep current and battery life are all untested.
+- **No hardware was built or run.** Display model `waveshare-2.13in-v3` vs. the board you receive, the RTC wiring, wake-on-button, the actual wake/boot timing for double-click, deep-sleep current and battery life are all untested.
 - **Firmware was not compiled in the authoring environment** (it had no access to the ESP-IDF download servers); compilation is only checked by CI if that run succeeded.
 - **The case has not been printed**; dimensions of parts are approximate and must be measured.
 - **Display prices were not compared.** No prices are given; the 2.13" choice is provisional (see [BOM](bom.md)).
