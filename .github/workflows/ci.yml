@@ -32,7 +32,7 @@ jobs:
           s = s.replace("source: github://CoolSaet/egg-freshness-tracker@main",
                         "source:\n      type: local\n      path: ../components")
           s = s.replace("REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED",
-                        "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE=")
+                        "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=")
           open("firmware/example.yaml", "w").write(s)
           PY
           esphome config firmware/example.yaml
