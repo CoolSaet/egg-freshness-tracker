@@ -4,6 +4,8 @@ Everything below can be done in a web browser with the Home Assistant ESPHome ad
 
 ## 1. Create the device in ESPHome
 
+> **The repository must be public.** The ESPHome add-on downloads the firmware logic from GitHub anonymously (`github://` references), which fails for a private repository. Make it public under the repository's **Settings → General → Danger Zone → Change visibility**, or publish a public fork and replace `CoolSaet/egg-freshness-tracker` in your YAML with your fork.
+
 1. In Home Assistant open **ESPHome** → **+ New device** → name it `egg-freshness-tracker` → choose **ESP32-C3** → skip the install step.
 2. Open the new device → **Edit**. The wizard generated `wifi:`, `api:` (with an encryption key) and `ota:` blocks. **Keep your generated `api` key and Wi-Fi settings.**
 3. Paste the contents of [`firmware/example-user-config.yaml`](../firmware/example-user-config.yaml) around them (it adds `external_components` and `packages`, which pull the firmware logic from this repository). Make sure there is only one of each top-level block (`wifi`, `api`, `ota`).
