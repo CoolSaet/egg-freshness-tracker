@@ -4,7 +4,7 @@ The case has two printed parts, [`body.stl`](../hardware/case/body.stl) and [`li
 
 > **Untested.** The STL files render as valid solids, but nothing has been printed or fitted with real parts. Dimensions of the display, XIAO and battery are from memory/datasheet figures. **Measure your parts and edit the values at the top of the `.scad` file** (open it in the free [OpenSCAD](https://openscad.org) app or the online OpenSCAD playground, export STL) before printing the final case. Print a quick test body first (e.g. 0.3 mm layers, 10 % infill) to check fit.
 
-Outer size ≈ 73 × 55 × 16 mm body + 3 mm lid.
+Outer size ≈ 95 × 64 × 18 mm body + 3 mm lid.
 
 ## Printing
 
@@ -20,7 +20,7 @@ Outer size ≈ 73 × 55 × 16 mm body + 3 mm lid.
 
 1. **Test-fit** all parts in the body before gluing or soldering anything.
 2. Prepare electronics on the bench first: wire the display, RTC, button and 10 kΩ resistor following [wiring](wiring.md). Flash the firmware **before** closing the case ([setup](setup.md)); USB-C is reachable through the slot afterwards, but updates are also possible over Wi-Fi.
-3. Stick the display, **screen facing the window**, into the rim on the inside of the front plate with a thin strip of double-sided tape. Do not press on the glass; handle by the edges and fold the flex tail gently toward the left tail area.
+3. Stick the display, **screen facing the window**, into the rim on the inside of the front plate with a thin strip of double-sided tape. Do not press on the glass; handle by the edges and keep the flex tail and connector free.
 4. Press the tactile switch into its hole in the right wall (the 7 mm hole is for the cap/stem; fix with a dab of hot glue or CA glue on the *switch body*, not the cap).
 5. Place the battery in the cavity between the ribs, taped with its protection board away from the XIAO, with a layer of Kapton under any bare solder joints. Do not squeeze it.
 6. Mount the XIAO behind the display, right of the battery, with its USB-C port towards the **right wall** slot. Lay the Waveshare PCF8563 board lengthwise in the strip below the display, between its two guide ribs (the case assumes 7 mm total thickness incl. coin cell; measure yours). Tape the boards in place; keep wires slack, none trapped by the posts.

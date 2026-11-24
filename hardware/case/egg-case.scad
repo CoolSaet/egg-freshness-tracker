@@ -14,15 +14,16 @@
 part = "preview";
 
 // ---- Parts (check against your actual parts!) ------------------------------------------
-// Bare 2.13" e-paper panel + flex tail area. Waveshare lists ~59.2 x 29.2 mm for the panel;
-// the 8-pin breakout/cable adds length at one short edge. VERIFY.
-disp_w = 59.5;       // panel width (long side)
-disp_h = 29.5;       // panel height
-disp_t = 1.6;        // panel thickness incl. adhesive
-win_w = 49.5;        // visible window (active area is about 48.6 x 23.7)
-win_h = 24.7;
+// Waveshare 2.9" e-paper MODULE (Tinytronics SKU 002750): PCB 90 x 38 mm per the shop listing.
+// Active area is about 67 x 29 mm; its position on the PCB, the thickness (disp_t) and the
+// window offset are ASSUMED. VERIFY with calipers.
+disp_w = 90.0;       // panel width (long side)
+disp_h = 38.0;       // panel height
+disp_t = 4.0;        // panel thickness incl. adhesive
+win_w = 68.0;        // visible window (active area is about 67 x 29)
+win_h = 30.0;
 win_off_x = 0;       // shift window if active area is not centred on the panel
-tail_w = 9;          // room at the left edge for the flex tail and 8-pin connector
+tail_w = 0;          // room at the left edge for the flex tail and 8-pin connector
 
 // Seeed XIAO ESP32-C3 is about 21 x 17.8 mm, 3.5 mm incl. USB-C shell about 8.4 x 3.2 mm.
 xiao_w = 21.5;

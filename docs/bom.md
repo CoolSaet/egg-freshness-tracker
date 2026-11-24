@@ -2,27 +2,20 @@
 
 **Prices are deliberately not listed.** I could not access AliExpress, Amazon or Conrad from the build environment, and I will not invent prices. Links below are **search links** (stable, but results change) or official manufacturer pages. Always confirm the exact variant before ordering.
 
-## Display choice: 2.13" vs 2.9"
+## Display choice
 
-The request was to pick whichever 2.13" or 2.9" module has the **cheaper total delivered cost to Belgium**. That comparison **has not been done** (no price access). Until it is:
+**Chosen: Waveshare 2.9" e-Paper Module, black/white, 296×128, SPI** (Tinytronics SKU 002750, Waveshare model 12956), with the 8-pin JST-PH to DuPont cable in the box. Price from the listing you supplied: **€19.00 incl. 21 % VAT (€15.70 ex VAT)**, shipping not included.
 
-- **Provisional choice: Waveshare-type 2.13" (250×122) black/white e-paper, "V3" revision**, because it is smaller (smaller case, shorter flex tail) and ESPHome has a model for it (`waveshare-2.13in-v3`). This is a **default for design purposes, not a price-based decision.**
-- To decide properly, fill this table with real quotes, **including shipping and import VAT/customs** to Belgium, for the *same* seller type (e.g. both from Amazon, or both from AliExpress "choice" shipping):
-
-| Module | Seller / link | Item price | Shipping to BE | VAT/customs | **Total delivered** | Date checked |
-|---|---|---|---|---|---|---|
-| 2.13" B/W 250×122 (V3, SSD1680-family) | | | | | | |
-| 2.9" B/W 296×128 | | | | | | |
-
-- If the 2.9" is clearly cheaper delivered, change `model:` to `waveshare-2.9in-v2` (check the revision of the module you buy), update the drawing coordinates in [`firmware/egg-freshness-tracker.yaml`](../firmware/egg-freshness-tracker.yaml) (screen becomes 296×128) and the display dimensions at the top of [`egg-case.scad`](../hardware/case/egg-case.scad). This is **not implemented or tested**.
-- **Revision matters.** Waveshare sells several 2.13" revisions (V2, V3, V4…) with different controllers/waveforms. Buy a board that says **V3** in the listing and on the PCB, or pick the ESPHome model that matches the revision you actually receive and re-validate. Cheap clones may not match; this is the highest-risk part of the BOM.
+- **The 2.13" vs 2.9" price comparison was not done.** I have only this one price (no access to other shops from my build environment). If a 2.13" module is clearly cheaper delivered, the earlier design (`waveshare-2.13in-v3`, 250×122) can be restored from the Git history, but it has not been maintained.
+- **Revision matters.** The firmware uses ESPHome's `waveshare-2.9in-v2` model. The listing does not state the module's revision, so check the V-number on the board or in Waveshare's documentation. If it is not V2, the model has to change or the screen will stay blank or show garbage.
+- Listing facts used: PCB 90 × 38 mm, 3.3–5 V supply, SPI, partial refresh supported, B/W only.
 
 ## Parts
 
 | # | Part | Qty | Notes | Where to look (search/official links) |
 |---|---|---|---|---|
 | 1 | Seeed Studio XIAO ESP32-C3 | 1 | ESP32-C3, USB-C, built-in LiPo charger, castellated pads incl. BAT+/BAT− on the underside. Pre-soldered headers optional. | [Seeed (official)](https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html) · [AliExpress](https://www.aliexpress.com/wholesale?SearchText=XIAO+ESP32C3) · [Amazon.nl](https://www.amazon.nl/s?k=Seeed+XIAO+ESP32C3) · [Conrad.be](https://www.conrad.be/nl/search.html?search=XIAO%20ESP32C3) |
-| 2 | 2.13" e-paper module, B/W, SPI, 3.3 V, **V3**, with 8-pin cable/breakout | 1 | See choice above. Get the *module with 8-pin cable* rather than the Raspberry Pi HAT. | [AliExpress](https://www.aliexpress.com/wholesale?SearchText=Waveshare+2.13+inch+e-paper+module+V3) · [Amazon.nl](https://www.amazon.nl/s?k=Waveshare+2.13+inch+e-paper+module+V3) · [Conrad.be](https://www.conrad.be/nl/search.html?search=2.13%20e-paper%20Waveshare) |
+| 2 | **Waveshare 2.9" e-Paper Module (B/W, 296×128, SPI)**, SKU 002750 | 1 | Includes mounting material and an 8-pin JST-PH to DuPont female cable, so no soldering to the display. | [Tinytronics SKU 002750](https://www.tinytronics.nl/en/search?search=002750) |
 | 3 | **Waveshare PCF8563 RTC Board** (Tinytronics) | 1 | I²C, 1.8–5.5 V supply and signals, PCB 54.3 × 15.5 mm, I²C pass-through headers, **backup battery included** (per the shop listing). Keeps time while the ESP32 sleeps and offline. | [Tinytronics (search "PCF8563")](https://www.tinytronics.nl/en/search?search=PCF8563) |
 | 4 | LiPo cell 3.7 V, **with built-in protection circuit (PCM)**, about 400–700 mAh, e.g. 503035 (5×30×35 mm), bare leads (no JST) or JST you will cut off | 1 | Must fit the case (max ≈ 6×31×36 mm). Do not buy cells without protection. See [battery safety](battery-safety.md). | [AliExpress](https://www.aliexpress.com/wholesale?SearchText=503035+3.7V+lipo+battery+protection) · [Amazon.nl](https://www.amazon.nl/s?k=503035+3.7V+lipo+500mAh) · [Conrad.be](https://www.conrad.be/nl/search.html?search=lipo%203.7V%20500mAh) |
 | 5 | Tactile switch 6×6 mm, with ~9–13 mm cap/stem | 1 | The case hole is 7 mm. | [AliExpress](https://www.aliexpress.com/wholesale?SearchText=6x6+tactile+switch+with+cap) · [Amazon.nl](https://www.amazon.nl/s?k=6x6+tactile+switch+kit) · [Conrad.be](https://www.conrad.be/nl/search.html?search=tactile%20switch%206x6) |
@@ -42,5 +35,5 @@ Tools: soldering iron + solder, wire cutters/strippers, small Phillips screwdriv
 ## Checks before ordering
 
 - XIAO ESP32-C3 (not S3/C6): the pin map in [wiring](wiring.md) is for the C3.
-- Display listing says **250×122, B/W, SPI, 3.3 V** and the revision you can support.
+- Display is **296×128, B/W, SPI, 3.3 V** and its revision is V2 (see above).
 - Battery has a protection board, fits the case, and its connector/leads can be wired to the XIAO pads.
