@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  date-logic-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: g++ -std=c++17 -Wall -Wextra -Icomponents/egg_dates tests/test_egg_dates.cpp -o /tmp/t && /tmp/t
+
+  esphome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install esphome
+      - name: Validate and compile firmware
+        run: |
+          esphome config firmware/dev.yaml
+          esphome compile firmware/dev.yaml
+      - name: Validate the user-facing config (remote package from this branch)
+        run: |
+          ref="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          printf 'wifi_ssid: ci\nwifi_password: ci-password\n' > secrets.yaml
+          sed -e "s/@main/@${ref}/g" -e 's/REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=/' firmware/example-user-config.yaml > example.yaml
+          esphome config example.yaml
+
+  case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y openscad
+      - name: Render case and check STL files are up to date and valid
+        run: |
+          for p in body lid; do
+            openscad -D "part=\"$p\"" -o /tmp/$p.stl hardware/case/egg-case.scad 2>&1 | tee /tmp/$p.log
+            grep -q "Simple: *yes" /tmp/$p.log
+            cmp /tmp/$p.stl hardware/case/$p.stl || echo "::warning::$p.stl differs from fresh render (OpenSCAD version differences are possible)"
+          done

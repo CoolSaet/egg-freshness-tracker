@@ -1,0 +1,357 @@
+# Egg freshness tracker - device logic (ESPHome package).
+# Hardware: Seeed XIAO ESP32-C3, Waveshare 2.13" e-paper (V3), PCF8563 RTC, one push button.
+# Wi-Fi, API key and OTA are NOT in this file: they live in your own device YAML
+# (see firmware/example-user-config.yaml) so each device keeps its own secrets.
+#
+# FOOD SAFETY: this device does not decide what is safe to eat. Both thresholds are
+# chosen by YOU and there are no defaults. The date counted is the GATHERED date,
+# which may be later than the laying date. Follow local food-safety guidance.
+
+substitutions:
+  device_name: egg-freshness-tracker
+  friendly_name: Egg Freshness Tracker
+  sleep_interval: 4h
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    priority: 200 # after the I2C bus and RTC are set up, before Wi-Fi
+    then:
+      - script.execute: startup
+
+esp32:
+  board: seeed_xiao_esp32c3
+  framework:
+    type: esp-idf
+
+# Free GPIO20/21 (UART pins) for the display; log over the native USB port instead.
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+egg_dates:
+
+# ---------------------------------------------------------------- persisted state
+globals:
+  - id: gathered_day # local calendar day number of the gathered date, 0 = not set
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: fresh_days # 0 = not set by the user yet
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: expiry_days # 0 = not set by the user yet
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: today_day
+    type: int
+    initial_value: "0"
+  - id: status_code
+    type: int
+    initial_value: "0"
+  - id: clicks
+    type: egg::ClickCounter
+  - id: config_window # single click = stay awake 2 min so settings can be changed in Home Assistant
+    type: bool
+    initial_value: "false"
+  - id: button_armed # becomes true once the button has been seen released
+    type: bool
+    initial_value: "false"
+
+# ---------------------------------------------------------------- time (Europe/Brussels)
+i2c:
+  sda: GPIO6 # XIAO D4
+  scl: GPIO7 # XIAO D5
+
+time:
+  # The PCF8563 keeps UTC time while the ESP32 sleeps and without Wi-Fi.
+  - platform: pcf8563
+    id: rtc_time
+    timezone: Europe/Brussels
+    update_interval: never
+  - platform: homeassistant
+    id: ha_time
+    timezone: Europe/Brussels
+    on_time_sync:
+      - pcf8563.write_time: rtc_time
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Brussels
+    on_time_sync:
+      - pcf8563.write_time: rtc_time
+
+# ---------------------------------------------------------------- deep sleep
+deep_sleep:
+  id: deep_sleep_ctrl
+  sleep_duration: ${sleep_interval}
+  # Safety net only; normal sleep is triggered by the startup script.
+  run_duration: 45min
+  wakeup_pin:
+    number: GPIO3 # XIAO D1, RTC-capable; button wakes the device on LOW
+    inverted: true
+    allow_other_uses: true
+    mode:
+      input: true
+      pullup: false # external 10k pull-up to 3V3 (internal pulls are off in deep sleep)
+
+# ---------------------------------------------------------------- button
+binary_sensor:
+  - platform: gpio
+    id: egg_button
+    internal: true
+    pin:
+      number: GPIO3
+      inverted: true
+      allow_other_uses: true
+      mode:
+        input: true
+        pullup: false
+    filters:
+      - delayed_on_off: 25ms
+    on_press:
+      - lambda: |-
+          if (id(button_armed)) id(clicks).press();
+      - if:
+          condition:
+            lambda: return id(button_armed);
+          then:
+            - script.execute:
+                id: click_window
+                wait_ms: 1200
+    on_release:
+      - lambda: id(button_armed) = true;
+
+# ---------------------------------------------------------------- Home Assistant thresholds
+number:
+  - platform: template
+    id: fresh_threshold
+    name: Fresh threshold
+    icon: mdi:egg
+    unit_of_measurement: days
+    entity_category: config
+    mode: box
+    min_value: 1
+    max_value: 365
+    step: 1
+    optimistic: true
+    restore_value: false # persisted in the `fresh_days` global instead (keeps "not set" state)
+    initial_value: .nan
+    set_action:
+      - lambda: id(fresh_days) = (int) x;
+      - script.execute: refresh
+  - platform: template
+    id: expiry_threshold
+    name: Expiry threshold
+    icon: mdi:egg-off
+    unit_of_measurement: days
+    entity_category: config
+    mode: box
+    min_value: 1
+    max_value: 365
+    step: 1
+    optimistic: true
+    restore_value: false
+    initial_value: .nan
+    set_action:
+      - lambda: id(expiry_days) = (int) x;
+      - script.execute: refresh
+
+switch:
+  - platform: template
+    id: stay_awake
+    name: Stay awake
+    icon: mdi:sleep-off
+    entity_category: config
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - script.execute: stay_awake_timer
+    turn_off_action:
+      - script.stop: stay_awake_timer
+
+button:
+  - platform: template
+    name: Set gathered date to today
+    icon: mdi:calendar-today
+    on_press:
+      - script.execute: apply_double_click
+
+text_sensor:
+  - platform: template
+    id: status_text
+    name: Status
+    icon: mdi:egg
+  - platform: template
+    id: gathered_text
+    name: Gathered date
+    icon: mdi:calendar-arrow-left
+  - platform: template
+    id: expiry_text
+    name: Expiry date
+    icon: mdi:calendar-end
+
+# ---------------------------------------------------------------- display
+font:
+  - file: "gfonts://Roboto@700"
+    id: font_mid
+    size: 22
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 14
+
+spi:
+  clk_pin: GPIO8 # XIAO D8 / SCK
+  mosi_pin: GPIO10 # XIAO D10 / MOSI
+
+display:
+  - platform: epaper_spi
+    id: epaper
+    model: waveshare-2.13in-v3 # Waveshare 2.13" e-Paper V3 (122x250). Check the V-number on the board.
+    cs_pin: GPIO20 # XIAO D7
+    dc_pin: GPIO21 # XIAO D6
+    reset_pin: GPIO5 # XIAO D3
+    busy_pin: GPIO4 # XIAO D2
+    rotation: 90
+    update_interval: never
+    lambda: |-
+      char buf[16];
+      it.fill(COLOR_OFF);
+      egg::format_display(id(gathered_day), buf, sizeof buf);
+      it.printf(4, 0, id(font_small), "Gathered");
+      it.printf(4, 14, id(font_mid), "%s", buf);
+      const egg::Status st = (egg::Status) id(status_code);
+      int32_t expiry = (id(gathered_day) != egg::NO_DATE && id(expiry_days) > 0)
+                           ? egg::expiry_day(id(gathered_day), id(expiry_days)) : egg::NO_DATE;
+      egg::format_display(expiry, buf, sizeof buf);
+      it.printf(4, 44, id(font_small), "Expires");
+      it.printf(4, 58, id(font_mid), "%s", buf);
+      // Status bar, inverted
+      it.filled_rectangle(0, 90, 250, 32, COLOR_ON);
+      it.printf(125, 106, id(font_mid), COLOR_OFF, TextAlign::CENTER, "%s", egg::status_text(st));
+
+# ---------------------------------------------------------------- scripts
+script:
+  # Work out today's local date and the status, update display + Home Assistant.
+  - id: refresh
+    mode: queued
+    then:
+      - lambda: |-
+          auto now = id(rtc_time).now();
+          const bool ok = now.is_valid();
+          id(today_day) = ok ? egg::days_from_civil(now.year, now.month, now.day_of_month) : egg::NO_DATE;
+          id(status_code) = (int) egg::classify(ok, id(today_day), id(gathered_day), id(fresh_days), id(expiry_days));
+          if (id(fresh_days) > 0) id(fresh_threshold).publish_state(id(fresh_days));
+          if (id(expiry_days) > 0) id(expiry_threshold).publish_state(id(expiry_days));
+          char buf[16];
+          id(status_text).publish_state(egg::status_text((egg::Status) id(status_code)));
+          egg::format_iso(id(gathered_day), buf, sizeof buf);
+          id(gathered_text).publish_state(buf);
+          int32_t expiry = (id(gathered_day) != egg::NO_DATE && id(expiry_days) > 0)
+                               ? egg::expiry_day(id(gathered_day), id(expiry_days)) : egg::NO_DATE;
+          egg::format_iso(expiry, buf, sizeof buf);
+          id(expiry_text).publish_state(buf);
+      - component.update: epaper
+      - delay: 200ms
+      - wait_until: # the e-paper refresh takes a few seconds; never sleep in the middle of it
+          condition:
+            lambda: return !id(epaper).is_updating();
+          timeout: 30s
+
+  # Set the gathered date to the current LOCAL calendar date (works offline once the RTC has time).
+  - id: apply_double_click
+    then:
+      - if:
+          condition:
+            lambda: return id(rtc_time).now().is_valid();
+          then:
+            - lambda: |-
+                auto now = id(rtc_time).now();
+                id(gathered_day) = egg::days_from_civil(now.year, now.month, now.day_of_month);
+          else:
+            - logger.log: "Clock not set yet - cannot set gathered date"
+      - script.execute: refresh
+
+  # Collect clicks for a short window, then act on a double click.
+  - id: click_window
+    mode: restart
+    parameters:
+      wait_ms: int
+    then:
+      - delay: !lambda return wait_ms;
+      - if:
+          condition:
+            lambda: return id(clicks).is_double();
+          then:
+            - lambda: id(clicks).reset(false);
+            - script.execute: apply_double_click
+          else:
+            - lambda: |-
+                id(clicks).reset(false);
+                id(config_window) = true;
+            - script.execute: refresh
+
+  - id: stay_awake_timer
+    mode: restart
+    then:
+      - delay: 30min
+      - switch.turn_off: stay_awake
+
+  # Runs on every wake-up: read clock, handle button, refresh, stay up briefly for Home Assistant, sleep.
+  - id: startup
+    then:
+      - pcf8563.read_time: rtc_time
+      - lambda: |-
+          const bool woke_by_button = esphome::deep_sleep::get_wakeup_cause() == esphome::deep_sleep::WAKEUP_CAUSE_GPIO;
+          id(clicks).reset(woke_by_button);
+          id(button_armed) = !id(egg_button).state;
+          if (woke_by_button) id(button_armed) = true;
+      - if:
+          condition:
+            lambda: return id(clicks).clicks > 0;
+          then:
+            # The wake-up press is click #1; allow a generous window for click #2 (boot takes ~0.5 s).
+            - script.execute:
+                id: click_window
+                wait_ms: 2000
+            - script.wait: click_window
+          else:
+            - script.execute: refresh
+      # No RTC time yet (first boot): wait for Home Assistant/SNTP, then redraw.
+      - if:
+          condition:
+            lambda: return id(status_code) == (int) egg::Status::NO_CLOCK;
+          then:
+            - wait_until:
+                condition:
+                  lambda: return id(ha_time).now().is_valid() || id(sntp_time).now().is_valid();
+                timeout: 60s
+            - script.execute: refresh
+      # Give Home Assistant a moment to receive the states and send time.
+      - wait_until:
+          condition:
+            api.connected:
+          timeout: 25s
+      - delay: 5s
+      # Both thresholds are mandatory: stay awake (up to 15 min) until they are set.
+      - if:
+          condition:
+            lambda: return id(fresh_days) <= 0 || id(expiry_days) <= 0;
+          then:
+            - wait_until:
+                condition:
+                  lambda: return id(fresh_days) > 0 && id(expiry_days) > 0;
+                timeout: 15min
+            - delay: 3s
+      - if:
+          condition:
+            lambda: return id(config_window);
+          then:
+            - delay: 2min
+      - wait_until:
+          condition:
+            switch.is_off: stay_awake
+      - script.wait: click_window
+      - deep_sleep.enter:
+          id: deep_sleep_ctrl
