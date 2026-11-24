@@ -44,7 +44,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y openscad
       - name: Render case and check STL files are up to date and valid
         run: |
-          for p in body lid; do
+          for p in body lid plunger; do
             openscad -D "part=\"$p\"" -o /tmp/$p.stl hardware/case/egg-case.scad 2>&1 | tee /tmp/$p.log
             grep -q "Simple: *yes" /tmp/$p.log
             cmp /tmp/$p.stl hardware/case/$p.stl || echo "::warning::$p.stl differs from fresh render (OpenSCAD version differences are possible)"
