@@ -1,0 +1,27 @@
+# Your own device file in the ESPHome Dashboard (Home Assistant add-on).
+# 1. In ESPHome click "+ New device", give it any name, skip the install step, then "Edit".
+# 2. KEEP the wifi:/api: (encryption key)/ota: blocks the wizard generated and add the
+#    external_components: and packages: blocks below. See docs/setup.md.
+#
+# "@main" pins to the latest published version. To freeze a version, replace it with a tag or commit.
+
+substitutions:
+  device_name: egg-freshness-tracker # use the name you chose in the wizard
+
+external_components:
+  - source: github://CoolSaet/egg-freshness-tracker@main
+    components: [egg_dates]
+
+packages:
+  egg: github://CoolSaet/egg-freshness-tracker/firmware/egg-freshness-tracker.yaml@main
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  encryption:
+    key: "REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED"
+
+ota:
+  - platform: esphome

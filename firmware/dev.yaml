@@ -1,0 +1,21 @@
+# Developer / CI config: uses the local components folder and dummy credentials.
+# Validate with:  esphome config firmware/dev.yaml
+substitutions:
+  device_name: egg-freshness-tracker
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+packages:
+  egg: !include egg-freshness-tracker.yaml
+
+wifi:
+  ssid: dummy
+  password: dummy-password
+
+api:
+ota:
+  - platform: esphome
+    password: dummy
