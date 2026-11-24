@@ -4,7 +4,7 @@ The case has two printed parts, [`body.stl`](../hardware/case/body.stl) and [`li
 
 > **Untested.** The STL files render as valid solids, but nothing has been printed or fitted with real parts. Dimensions of the display, XIAO and battery are from memory/datasheet figures. **Measure your parts and edit the values at the top of the `.scad` file** (open it in the free [OpenSCAD](https://openscad.org) app or the online OpenSCAD playground, export STL) before printing the final case. Print a quick test body first (e.g. 0.3 mm layers, 10 % infill) to check fit.
 
-Outer size ≈ 73 × 42 × 16 mm body + 3 mm lid.
+Outer size ≈ 73 × 55 × 16 mm body + 3 mm lid.
 
 ## Printing
 
@@ -23,7 +23,7 @@ Outer size ≈ 73 × 42 × 16 mm body + 3 mm lid.
 3. Stick the display, **screen facing the window**, into the rim on the inside of the front plate with a thin strip of double-sided tape. Do not press on the glass; handle by the edges and fold the flex tail gently toward the left tail area.
 4. Press the tactile switch into its hole in the right wall (the 7 mm hole is for the cap/stem; fix with a dab of hot glue or CA glue on the *switch body*, not the cap).
 5. Place the battery in the cavity between the ribs, taped with its protection board away from the XIAO, with a layer of Kapton under any bare solder joints. Do not squeeze it.
-6. Mount the XIAO at the bottom right with the USB-C port aligned to the slot in the bottom wall, and the RTC beside it. Tape the boards in place; keep wires slack, none trapped by the posts.
+6. Mount the XIAO behind the display, right of the battery, with its USB-C port towards the **right wall** slot. Lay the Waveshare PCF8563 board lengthwise in the strip below the display, between its two guide ribs (the case assumes 7 mm total thickness incl. coin cell; measure yours). Tape the boards in place; keep wires slack, none trapped by the posts.
 7. Optional: glue the two 8 × 2 mm magnets (check polarity) into the pockets on the outside of the lid.
 8. Close the lid with four **short** M2 self-tapping screws (6–8 mm). Snug, not tight.
 9. Smoke test: plug in USB-C (or connect the battery), confirm the display updates and the button wakes the device.

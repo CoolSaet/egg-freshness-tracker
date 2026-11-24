@@ -41,6 +41,8 @@ Notes:
  LiPo + ─ BAT+ pad    LiPo − ─ BAT− pad   (underside of the XIAO)
 ```
 
+Waveshare PCF8563 board: connect to the male header pins (SDA, SCL, VCC, GND); leave INT/other pins unconnected. Its female header is the I²C pass-through and is not needed.
+
 ## Soldering order
 
 1. Solder wires to the PCF8563, display cable/breakout and button first; keep them short.
