@@ -22,12 +22,20 @@ jobs:
         run: |
           esphome config firmware/dev.yaml
           esphome compile firmware/dev.yaml
-      - name: Validate the user-facing config (remote package from this branch)
+      - name: Validate the user-facing config (github:// references rewritten to local files)
         run: |
-          ref="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          printf 'wifi_ssid: ci\nwifi_password: ci-password\n' > secrets.yaml
-          sed -e "s/@main/@${ref}/g" -e 's/REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=/' firmware/example-user-config.yaml > example.yaml
-          esphome config example.yaml
+          printf 'wifi_ssid: ci\nwifi_password: ci-password\n' > firmware/secrets.yaml
+          python - <<'PY'
+          s = open("firmware/example-user-config.yaml").read()
+          s = s.replace("github://CoolSaet/egg-freshness-tracker/firmware/egg-freshness-tracker.yaml@main",
+                        "!include egg-freshness-tracker.yaml")
+          s = s.replace("source: github://CoolSaet/egg-freshness-tracker@main",
+                        "source:\n      type: local\n      path: ../components")
+          s = s.replace("REPLACE-WITH-THE-KEY-THE-WIZARD-GENERATED",
+                        "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=")
+          open("firmware/example.yaml", "w").write(s)
+          PY
+          esphome config firmware/example.yaml
 
   case:
     runs-on: ubuntu-latest
