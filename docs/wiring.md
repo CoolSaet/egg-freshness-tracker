@@ -23,6 +23,7 @@ Notes:
 - **GPIO3 is deep-sleep-wake capable** on the ESP32-C3 (only GPIO0–5 are). It is not a strapping pin. The **external 10 kΩ pull-up is required** because internal pull-ups are not kept during deep sleep.
 - GPIO8 (SCK) is a strapping pin; it is the board's standard SPI clock and ESPHome prints a warning, which is expected. Do not add external pull-ups/downs on it.
 - GPIO20/GPIO21 are the UART pins; the firmware sends logs over USB (`USB_SERIAL_JTAG`) instead.
+- The display's 8-pin JST-PH cable ends in DuPont sockets. The Waveshare pin order is VCC, GND, DIN, CLK, CS, DC, RST, BUSY; check the labels on the module and wire by label, not by cable colour.
 - Display `GND` to GND, `VCC` to **3V3** (not 5 V, not the battery).
 
 ## Schematic
@@ -40,6 +41,8 @@ Notes:
 
  LiPo + ─ BAT+ pad    LiPo − ─ BAT− pad   (underside of the XIAO)
 ```
+
+Waveshare PCF8563 board: connect to the male header pins (SDA, SCL, VCC, GND); leave INT/other pins unconnected. Its female header is the I²C pass-through and is not needed.
 
 ## Soldering order
 

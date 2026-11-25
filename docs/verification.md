@@ -12,10 +12,10 @@
 
 ## NOT verified
 
-- **No hardware was built or run.** Display model `waveshare-2.13in-v3` vs. the board you receive, the RTC wiring, wake-on-button, the actual wake/boot timing for double-click, deep-sleep current and battery life are all untested.
+- **No hardware was built or run.** Display model `waveshare-2.9in-v2` vs. the board you receive, the RTC wiring, wake-on-button, the actual wake/boot timing for double-click, deep-sleep current and battery life are all untested.
 - **Firmware was not compiled in the authoring environment** (it had no access to the ESP-IDF download servers); compilation is only checked by CI if that run succeeded.
-- **The case has not been printed**; dimensions of parts are approximate and must be measured.
-- **Display prices were not compared.** No prices are given; the 2.13" choice is provisional (see [BOM](bom.md)).
+- **The case has not been printed**; the RTC board thickness (7 mm) in the case is an assumption; dimensions of parts are approximate and must be measured.
+- **2.13" and 2.9" prices were not compared.** Only the user-supplied Tinytronics price of the 2.9" module is recorded (see [BOM](bom.md)); the display revision is unconfirmed.
 - Home Assistant behaviour (entity availability, adoption, threshold persistence across reboot) was not tested against a live Home Assistant.
 - Battery charging/safety notes are general guidance, not product-specific verification.
 - The 7-day/28-day example is unverified and not used anywhere as a default.

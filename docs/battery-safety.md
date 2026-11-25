@@ -5,7 +5,7 @@ Lithium-polymer (LiPo) cells can catch fire if shorted, punctured, overcharged, 
 ## Choosing the battery
 
 - 3.7 V single-cell LiPo **with a protection circuit (PCM/BMS board)** — protects against over-charge, over-discharge and short-circuit. Never use bare cells without protection.
-- Capacity about 400–700 mAh, size ≤ 6 × 31 × 36 mm so it fits the case. Bigger is not better here: a larger cell charges more slowly on the XIAO's small charger and does not fit.
+- The case is sized for the PKCELL LP503562 (3.7 V, 1200 mAh, about 5 × 35 × 62 mm). Other cells must fit within ≈ 6 × 36 × 63 mm. The cell must have a protection circuit, which I could not confirm from the listing; charging a 1200 mAh cell on the XIAO's small charger is slow but fine. Check the JST-PH polarity of the wires against BAT+/BAT− with a multimeter; PKCELL/other brands sometimes differ from what the XIAO expects.
 - Buy from a seller who states capacity honestly and offers CE/UN 38.3 documentation; very cheap cells often overstate capacity.
 - Check the **polarity of the leads**. Red/black is *usually* but not always +/−. Many cells come with a JST connector whose polarity does **not** match the XIAO's pads; do not assume.
 
@@ -33,4 +33,4 @@ Lithium-polymer (LiPo) cells can catch fire if shorted, punctured, overcharged, 
 
 ## Runtime (estimate, **not measured**)
 
-With a 4-hour sleep interval the device is mostly asleep; each wake-up (Wi-Fi + display refresh) is on the order of tens of seconds. A rough estimate from datasheet-class numbers suggests weeks to months per charge on a ~500 mAh cell, but **actual runtime depends on Wi-Fi quality, the display, and unmeasured sleep current** (the XIAO board, display and RTC each leak a little). Measure with a USB power meter or multimeter before trusting any figure. Leaving the `Stay awake` switch on, or an unconfigured device, drains the battery in about a day.
+With a 4-hour sleep interval the device is mostly asleep; each wake-up (Wi-Fi + display refresh) is on the order of tens of seconds. A rough estimate from datasheet-class numbers suggests weeks to months per charge on a ~1200 mAh cell, but **actual runtime depends on Wi-Fi quality, the display, and unmeasured sleep current** (the XIAO board, display and RTC each leak a little). Measure with a USB power meter or multimeter before trusting any figure. Leaving the `Stay awake` switch on, or an unconfigured device, drains the battery in about a day.

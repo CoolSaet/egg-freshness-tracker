@@ -1,5 +1,5 @@
 # Egg freshness tracker - device logic (ESPHome package).
-# Hardware: Seeed XIAO ESP32-C3, Waveshare 2.13" e-paper (V3), PCF8563 RTC, one push button.
+# Hardware: Seeed XIAO ESP32-C3, Waveshare 2.9" e-paper module, PCF8563 RTC, one push button.
 # Wi-Fi, API key and OTA are NOT in this file: they live in your own device YAML
 # (see firmware/example-user-config.yaml) so each device keeps its own secrets.
 #
@@ -208,7 +208,7 @@ spi:
 display:
   - platform: epaper_spi
     id: epaper
-    model: waveshare-2.13in-v3 # Waveshare 2.13" e-Paper V3 (122x250). Check the V-number on the board.
+    model: waveshare-2.9in-v2 # Waveshare 2.9" e-Paper Module (296x128, B/W). Check the V-number on the board.
     cs_pin: GPIO20 # XIAO D7
     dc_pin: GPIO21 # XIAO D6
     reset_pin: GPIO5 # XIAO D3
@@ -225,11 +225,11 @@ display:
       int32_t expiry = (id(gathered_day) != egg::NO_DATE && id(expiry_days) > 0)
                            ? egg::expiry_day(id(gathered_day), id(expiry_days)) : egg::NO_DATE;
       egg::format_display(expiry, buf, sizeof buf);
-      it.printf(4, 44, id(font_small), "Expires");
-      it.printf(4, 58, id(font_mid), "%s", buf);
+      it.printf(4, 46, id(font_small), "Expires");
+      it.printf(4, 60, id(font_mid), "%s", buf);
       // Status bar, inverted
-      it.filled_rectangle(0, 90, 250, 32, COLOR_ON);
-      it.printf(125, 106, id(font_mid), COLOR_OFF, TextAlign::CENTER, "%s", egg::status_text(st));
+      it.filled_rectangle(0, 92, it.get_width(), 36, COLOR_ON);
+      it.printf(it.get_width() / 2, 110, id(font_mid), COLOR_OFF, TextAlign::CENTER, "%s", egg::status_text(st));
 
 # ---------------------------------------------------------------- scripts
 script:
