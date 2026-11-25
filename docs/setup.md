@@ -7,10 +7,23 @@ Everything below can be done in a web browser with the Home Assistant ESPHome ad
 > **The repository must be public.** The ESPHome add-on downloads the firmware logic from GitHub anonymously (`github://` references), which fails for a private repository. Make it public under the repository's **Settings → General → Danger Zone → Change visibility**, or publish a public fork and replace `CoolSaet/egg-freshness-tracker` in your YAML with your fork.
 
 1. In Home Assistant open **ESPHome** → **+ New device** → name it `egg-freshness-tracker` → choose **ESP32-C3** → skip the install step.
-2. Open the new device → **Edit**. The wizard generated `wifi:`, `api:` (with an encryption key) and `ota:` blocks. **Keep your generated `api` key and Wi-Fi settings.**
-3. Paste the contents of [`firmware/example-user-config.yaml`](../firmware/example-user-config.yaml) around them (it adds `external_components` and `packages`, which pull the firmware logic from this repository). Make sure there is only one of each top-level block (`wifi`, `api`, `ota`).
-4. Set the correct key in `api: encryption: key:`.
-5. **Install** the first time via the browser (below).
+2. Open the new device → **Edit**. Keep the wizard-generated `wifi:`, `api:` (including its encryption key) and `ota:` blocks.
+3. Add only these three sections from [`firmware/example-user-config.yaml`](../firmware/example-user-config.yaml). Set `device_name` to the name you gave the device:
+
+   ```yaml
+   substitutions:
+     device_name: egg-freshness-tracker
+
+   external_components:
+     - source: github://CoolSaet/egg-freshness-tracker@main
+       components: [egg_dates]
+
+   packages:
+     egg: github://CoolSaet/egg-freshness-tracker/firmware/egg-freshness-tracker.yaml@main
+   ```
+
+   Do not replace or duplicate the generated `wifi:`, `api:` or `ota:` sections.
+4. **Install** the first time via the browser (below).
 
 The first build downloads fonts and the ESP-IDF toolchain, and can take 5–15 minutes.
 
@@ -20,7 +33,7 @@ Option A – **plug into the Home Assistant host**: ESPHome → Install → *Plu
 
 Option B – **plug into your laptop**: ESPHome → Install → *Manual download* → *Factory format* and flash it at <https://web.esphome.io> using Chrome/Edge (needs Web Serial; this may be blocked on a restricted laptop, then use option A).
 
-If the board is not detected, hold the **B (Boot)** button on the XIAO while plugging in USB, then release. After the first flash, updates go over Wi-Fi (OTA).
+If the board is not detected, hold its **BOOT** button while plugging in USB, then release. After the first flash, updates go over Wi-Fi (OTA).
 
 ## 3. Adopt in Home Assistant
 

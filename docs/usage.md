@@ -11,7 +11,7 @@ The double-click works with **no Wi-Fi**, as long as the PCF8563 has been synchr
 
 ## Sleep and "unavailable" in Home Assistant
 
-The device deep-sleeps for **4 hours** between updates (ESPHome `deep_sleep`), and also wakes when the button is pressed. In deep sleep, Wi-Fi is off, so **Home Assistant will usually show the device and its entities as `unavailable`** between wake-ups. That is expected, not a fault. On each wake-up the device reconnects, publishes its status, expiry date and thresholds, then goes back to sleep after a few seconds (typically 10–40 s awake).
+The device deep-sleeps for **4 hours** between updates (ESPHome `deep_sleep`), and also wakes when the button is pressed. In deep sleep, Wi-Fi is off, so **Home Assistant will usually show the device and its entities as `unavailable`** between wake-ups. That is expected, not a fault. On each wake-up the device reconnects, publishes its status, expiry date, thresholds, last-updated timestamp and days-until-expiration value, then goes back to sleep after a few seconds (typically 10–40 s awake).
 
 Consequences:
 
@@ -29,6 +29,8 @@ Consequences:
 | Status | text | `FRESH`, `STILL OK`, `EXPIRED`, or a setup message |
 | Gathered date | text (YYYY-MM-DD) | |
 | Expiry date | text (YYYY-MM-DD) | gathered date + expiry threshold |
+| Last updated | timestamp | Last time an authenticated ESPHome API client connected (normally Home Assistant); refreshed on reconnect once the clock is valid |
+| Days until expiration | sensor (days) | Calendar days from today to the expiry date; zero on the expiry date and negative afterwards |
 | Set gathered date to today | button | Same as double-click, only while the device is awake |
 | Stay awake | switch | Prevents sleeping for up to 30 min while you configure |
 

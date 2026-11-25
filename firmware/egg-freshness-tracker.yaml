@@ -1,5 +1,5 @@
 # Egg freshness tracker - device logic (ESPHome package).
-# Hardware: Seeed XIAO ESP32-C3, Waveshare 2.9" e-paper module, PCF8563 RTC, one push button.
+# Hardware: ESP32-C3 Super Mini, Waveshare 2.9" e-paper module, PCF8563 RTC, one push button.
 # Wi-Fi, API key and OTA are NOT in this file: they live in your own device YAML
 # (see firmware/example-user-config.yaml) so each device keeps its own secrets.
 #
@@ -21,7 +21,7 @@ esphome:
       - script.execute: startup
 
 esp32:
-  board: seeed_xiao_esp32c3
+  board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
 
@@ -62,8 +62,8 @@ globals:
 
 # ---------------------------------------------------------------- time (Europe/Brussels)
 i2c:
-  sda: GPIO6 # XIAO D4
-  scl: GPIO7 # XIAO D5
+  sda: GPIO6
+  scl: GPIO7
 
 time:
   # The PCF8563 keeps UTC time while the ESP32 sleeps and without Wi-Fi.
@@ -76,6 +76,7 @@ time:
     timezone: Europe/Brussels
     on_time_sync:
       - pcf8563.write_time: rtc_time
+      - script.execute: record_contact
   - platform: sntp
     id: sntp_time
     timezone: Europe/Brussels
@@ -89,7 +90,7 @@ deep_sleep:
   # Safety net only; normal sleep is triggered by the startup script.
   run_duration: 45min
   wakeup_pin:
-    number: GPIO3 # XIAO D1, RTC-capable; button wakes the device on LOW
+    number: GPIO3 # RTC-capable; button wakes the device on LOW
     inverted: true
     allow_other_uses: true
     mode:
@@ -192,6 +193,26 @@ text_sensor:
     name: Expiry date
     icon: mdi:calendar-end
 
+sensor:
+  - platform: template
+    id: last_updated
+    name: Last updated
+    icon: mdi:clock-check-outline
+    device_class: timestamp
+    entity_category: diagnostic
+    accuracy_decimals: 0
+  - platform: template
+    id: days_until_expiration
+    name: Days until expiration
+    icon: mdi:calendar-clock
+    unit_of_measurement: d
+    accuracy_decimals: 0
+    state_class: measurement
+
+api:
+  on_client_connected:
+    - script.execute: record_contact
+
 # ---------------------------------------------------------------- display
 font:
   - file: "gfonts://Roboto@700"
@@ -202,17 +223,17 @@ font:
     size: 14
 
 spi:
-  clk_pin: GPIO8 # XIAO D8 / SCK
-  mosi_pin: GPIO10 # XIAO D10 / MOSI
+  clk_pin: GPIO8
+  mosi_pin: GPIO10
 
 display:
   - platform: epaper_spi
     id: epaper
     model: waveshare-2.9in-v2 # Waveshare 2.9" e-Paper Module (296x128, B/W). Check the V-number on the board.
-    cs_pin: GPIO20 # XIAO D7
-    dc_pin: GPIO21 # XIAO D6
-    reset_pin: GPIO5 # XIAO D3
-    busy_pin: GPIO4 # XIAO D2
+    cs_pin: GPIO20
+    dc_pin: GPIO21
+    reset_pin: GPIO5
+    busy_pin: GPIO4
     rotation: 90
     update_interval: never
     lambda: |-
@@ -233,6 +254,13 @@ display:
 
 # ---------------------------------------------------------------- scripts
 script:
+  # Record only a successful native API connection, not a local refresh or wake.
+  - id: record_contact
+    then:
+      - lambda: |-
+          auto now = id(rtc_time).now();
+          if (now.is_valid()) id(last_updated).publish_state(now.timestamp);
+
   # Work out today's local date and the status, update display + Home Assistant.
   - id: refresh
     mode: queued
@@ -250,6 +278,11 @@ script:
           id(gathered_text).publish_state(buf);
           int32_t expiry = (id(gathered_day) != egg::NO_DATE && id(expiry_days) > 0)
                                ? egg::expiry_day(id(gathered_day), id(expiry_days)) : egg::NO_DATE;
+          if (ok && expiry != egg::NO_DATE) {
+            id(days_until_expiration).publish_state(expiry - id(today_day));
+          } else {
+            id(days_until_expiration).publish_state(NAN);
+          }
           egg::format_iso(expiry, buf, sizeof buf);
           id(expiry_text).publish_state(buf);
       - component.update: epaper
