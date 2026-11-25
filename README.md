@@ -1,8 +1,8 @@
 # Egg freshness tracker
 
-Battery-powered ESPHome egg-date tracker with a monochrome e-paper display and a printable enclosure. An ESP32-C3 shows the **gathered date**, the **calculated expiry date** and a status of **Fresh**, **Still OK** or **Expired**, and reports to Home Assistant.
+ESPHome egg-date tracker for an ESP32-C3 Super Mini, with a monochrome e-paper display, Seeed Lipo Rider Plus charger/booster and a printable enclosure. It shows the **gathered date**, the **calculated expiry date** and a status of **Fresh**, **Still OK** or **Expired**, and reports to Home Assistant.
 
-> **Project status (please read):** The firmware configuration validates and the date/button logic passes unit tests on a computer. **No hardware has been built or tested, and the case has not been printed.** See [what is verified](docs/verification.md). Treat everything involving real parts (pin choices, display model, case dimensions, battery runtime) as a design to be checked, not a proven build.
+> **Project status (please read):** The firmware configuration validates and the date/button logic passes unit tests on a computer. **No hardware has been built or tested, and the case has not been printed.** The existing case was designed around a XIAO and may need changes for the Super Mini. See [what is verified](docs/verification.md). Treat everything involving real parts (pin choices, display model, case dimensions, battery runtime) as a design to be checked, not a proven build.
 
 ## Food-safety disclaimer
 

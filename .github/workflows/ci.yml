@@ -9,6 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: g++ -std=c++17 -Wall -Wextra -Icomponents/egg_dates tests/test_egg_dates.cpp -o /tmp/t && /tmp/t
+      - run: python tests/test_firmware_contact.py
 
   esphome:
     runs-on: ubuntu-latest

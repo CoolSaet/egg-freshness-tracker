@@ -15,7 +15,7 @@ wifi:
   ssid: dummy
   password: dummy-password
 
-api:
+api: {}
 ota:
   - platform: esphome
     password: dummy
